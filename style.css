@@ -1,0 +1,326 @@
+/* style.css - Основные стили для Shadow Arena */
+
+/* Сброс стилей и базовые настройки */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+/* Основные стили страницы */
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    background: #000000;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+/* Контейнер игры */
+#game-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Canvas Phaser */
+canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+}
+
+/* Адаптация под разные экраны */
+@media (max-width: 768px) {
+    /* Для мобильных телефонов */
+    #game-container {
+        transform-origin: center center;
+    }
+    
+    /* Для очень маленьких экранов */
+    @media (max-height: 500px) {
+        #game-container {
+            transform: scale(0.9);
+        }
+    }
+}
+
+/* Портретная ориентация - скрываем игру */
+@media (orientation: portrait) and (max-width: 768px) {
+    #game-container {
+        display: none !important;
+    }
+}
+
+/* Ландшафтная ориентация - показываем игру */
+@media (orientation: landscape) {
+    #game-container {
+        display: block !important;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes damageFlash {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(255, 0, 0, 0.3); }
+    100% { background-color: transparent; }
+}
+
+@keyframes comboPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes energyGlow {
+    0% { box-shadow: 0 0 5px #0088ff; }
+    50% { box-shadow: 0 0 20px #0088ff; }
+    100% { box-shadow: 0 0 5px #0088ff; }
+}
+
+@keyframes criticalFlash {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(2); }
+    100% { filter: brightness(1); }
+}
+
+/* Классы для анимаций */
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.pulse-effect {
+    animation: pulse 1s infinite;
+}
+
+.shake-effect {
+    animation: shake 0.5s ease-in-out;
+}
+
+.damage-effect {
+    animation: damageFlash 0.3s ease-out;
+}
+
+.combo-effect {
+    animation: comboPulse 0.5s ease-in-out;
+}
+
+.energy-glow {
+    animation: energyGlow 1s infinite;
+}
+
+.critical-flash {
+    animation: criticalFlash 0.3s ease-in-out;
+}
+
+/* Скрытие скроллбаров */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Для Firefox */
+* {
+    scrollbar-width: none;
+}
+
+/* Оптимизация для слабых устройств */
+@media (max-device-width: 480px) {
+    /* Уменьшаем качество рендеринга на слабых устройствах */
+    canvas {
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -webkit-crisp-edges;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Для устройств с высоким DPI */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    canvas {
+        image-rendering: auto;
+    }
+}
+
+/* Отключение голубого подсвечивания на Android Chrome */
+*:focus {
+    outline: none;
+}
+
+/* Фикс для iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    body {
+        /* Занимаем всю высоту экрана на iOS */
+        height: -webkit-fill-available;
+    }
+}
+
+/* Фикс для адресной строки на мобильных */
+@media (max-height: 700px) {
+    body {
+        height: 100vh;
+    }
+}
+
+/* Поддержка темной темы */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #000000;
+    }
+}
+
+/* Отключение bounce-эффекта на iOS */
+html {
+    overflow: hidden;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+}
+
+/* Гарантия что игра всегда на всю высоту */
+body {
+    overscroll-behavior: none;
+}
+
+/* Стили для текста в игре */
+.game-text {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    text-shadow: 2px 2px 0 #000;
+}
+
+/* Для плавных переходов */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+/* Эффект размытия для фона меню */
+.blur-background {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Стили для кнопок */
+.game-button {
+    background: linear-gradient(145deg, #ff4444, #cc0000);
+    border: 2px solid #fff;
+    border-radius: 10px;
+    color: white;
+    padding: 12px 24px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-shadow: 1px 1px 0 #000;
+    box-shadow: 0 4px 0 #990000;
+}
+
+.game-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #990000;
+}
+
+.game-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #990000;
+}
+
+.game-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 4px 0 #990000;
+}
+
+/* Стили для полосок здоровья */
+.health-bar-container {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #333;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 200px;
+    height: 20px;
+}
+
+.health-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000, #00ff00);
+    transition: width 0.3s ease;
+}
+
+.energy-bar-container {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #333;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 200px;
+    height: 10px;
+    margin-top: 5px;
+}
+
+.energy-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0088ff, #00ffff);
+    transition: width 0.3s ease;
+}
+
+/* Стили для уведомлений */
+.notification {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    border: 2px solid #ff4444;
+    z-index: 1000;
+    text-align: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Адаптивные стили для разных ориентаций */
+@media (orientation: landscape) and (max-height: 400px) {
+    .health-bar-container {
+        width: 150px;
+        height: 15px;
+    }
+    
+    .energy-bar-container {
+        width: 150px;
+        height: 8px;
+    }
+}
+
+@media (orientation: portrait) {
+    /* Стили для портретной ориентации (если потребуется) */
+  }
