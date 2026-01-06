@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Shadow Arena: Legacy Fight - 2D файтинг в стиле Shadow Fight 2. Сражайся в эпических битвах!">
+    <meta name="theme-color" content="#ff4444">
+    <title>Shadow Arena: Legacy Fight</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Press Start 2P', monospace;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        .loading-title {
+            font-size: 2.5rem;
+            color: #ff4444;
+            text-shadow: 0 0 10px #ff0000;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .loading-subtitle {
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .loading-bar-container {
+            width: 80%;
+            max-width: 400px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff8800);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+
+        .loading-percent {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .loading-hint {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            position: absolute;
+            bottom: 2rem;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #orientation-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .orientation-icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: rotate 2s infinite linear;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(90deg); }
+        }
+
+        #fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 68, 68, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        #mobile-controls-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            max-width: 200px;
+            z-index: 100;
+            display: none;
+        }
+
+        /* Адаптация для мобильных */
+        @media (max-width: 768px) {
+            .loading-title {
+                font-size: 1.8rem;
+            }
+            
+            .loading-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            #fullscreen-btn {
+                display: block !important;
+            }
+        }
+
+        @media (orientation: portrait) and (max-width: 768px) {
+            #orientation-warning {
+                display: flex;
+            }
+            
+            #game-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <div class="loading-title">SHADOW ARENA</div>
+        <div class="loading-subtitle">LEGACY FIGHT</div>
+        <div class="loading-percent" id="loading-percent">0%</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loading-bar"></div>
+        </div>
+        <div class="loading-hint">
+            Для лучшего опыта используйте ландшафтную ориентацию
+        </div>
+    </div>
+
+    <!-- Предупреждение об ориентации -->
+    <div id="orientation-warning">
+        <div class="orientation-icon">📱</div>
+        <div style="font-size: 1.5rem; margin-bottom: 1rem;">ПОВЕРНИТЕ УСТРОЙСТВО</div>
+        <div>Для игры требуется ландшафтная ориентация</div>
+    </div>
+
+    <!-- Контейнер для игры -->
+    <div id="game-container"></div>
+
+    <!-- Кнопка полноэкранного режима -->
+    <button id="fullscreen-btn" title="Полный экран">⛶</button>
+
+    <!-- Информация об управлении на мобильных -->
+    <div id="mobile-controls-info">
+        <strong>УПРАВЛЕНИЕ:</strong><br>
+        Левая часть - движение<br>
+        Правая часть - жесты<br>
+        ←→ Свайп - удары<br>
+        ↑ Свайп - прыжок<br>
+        ⭕ Круг - магия
+    </div>
+
+    <!-- Основной скрипт игры -->
+    <script src="game.js"></script>
+
+    <script>
+        // Инициализация загрузки
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loading-screen');
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingPercent = document.getElementById('loading-percent');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const mobileInfo = document.getElementById('mobile-controls-info');
+            const orientationWarning = document.getElementById('orientation-warning');
+            
+            let progress = 0;
+            
+            // Функция обновления прогресса
+            function updateProgress(value) {
+                progress = Math.min(100, value);
+                loadingBar.style.width = progress + '%';
+                loadingPercent.textContent = Math.floor(progress) + '%';
+                
+                if (progress >= 100) {
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingScreen.classList.add('hidden');
+                            
+                            // Показать подсказку на мобильных
+                            if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                                mobileInfo.style.display = 'block';
+                                setTimeout(() => {
+                                    mobileInfo.style.opacity = '0';
+                                    mobileInfo.style.transition = 'opacity 1s';
+                                    setTimeout(() => {
+                                        mobileInfo.style.display = 'none';
+                                    }, 1000);
+                                }, 5000);
+                            }
+                            
+                            // Показать кнопку полноэкранного режима на ПК
+                            if (!/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                                fullscreenBtn.style.display = 'block';
+                            }
+                        }, 500);
+                    }, 300);
+                }
+            }
+            
+            // Симуляция загрузки
+            const loadInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                updateProgress(progress);
+                
+                if (progress >= 100) {
+                    clearInterval(loadInterval);
+                }
+            }, 200);
+            
+            // Проверка ориентации
+            function checkOrientation() {
+                if (window.innerHeight > window.innerWidth && window.innerWidth <= 768) {
+                    orientationWarning.style.display = 'flex';
+                    return false;
+                } else {
+                    orientationWarning.style.display = 'none';
+                    return true;
+                }
+            }
+            
+            // Проверка при загрузке и изменении размера
+            window.addEventListener('load', checkOrientation);
+            window.addEventListener('resize', checkOrientation);
+            window.addEventListener('orientationchange', checkOrientation);
+            
+            // Полноэкранный режим
+            fullscreenBtn.addEventListener('click', function() {
+                const elem = document.documentElement;
+                if (!document.fullscreenElement) {
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
+                    }
+                    this.textContent = '✕';
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                    this.textContent = '⛶';
+                }
+            });
+            
+            // Предотвращение масштабирования на мобильных
+            document.addEventListener('touchmove', function(e) {
+                if (e.scale !== 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Отключение контекстного меню
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // Обновление прогресса при событиях загрузки
+            window.addEventListener('load', () => updateProgress(30));
+            setTimeout(() => updateProgress(50), 500);
+            setTimeout(() => updateProgress(80), 1000);
+        });
+    </script>
+</body>
+  </html>
